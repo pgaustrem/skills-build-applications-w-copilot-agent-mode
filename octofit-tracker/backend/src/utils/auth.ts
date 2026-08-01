@@ -49,7 +49,14 @@ export function verifyToken(token: string): TokenPayload | null {
     .replace(/\//g, '_')
     .replace(/=+$/g, '');
 
-  if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature)) === false) {
+  const signatureBuffer = Buffer.from(signature);
+  const expectedSignatureBuffer = Buffer.from(expectedSignature);
+
+  if (signatureBuffer.length !== expectedSignatureBuffer.length) {
+    return null;
+  }
+
+  if (crypto.timingSafeEqual(signatureBuffer, expectedSignatureBuffer) === false) {
     return null;
   }
 

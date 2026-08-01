@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { createApp } from '../server.js';
 import { User } from '../models/index.js';
-import { createTokenForUser, verifyToken } from '../utils/auth.js';
+import { createTokenForUser, signToken, verifyToken } from '../utils/auth.js';
 import { connectDatabase } from '../config/database.js';
 
 let mongod: MongoMemoryServer;
@@ -78,6 +78,51 @@ describe('login and protected routes', () => {
     expect(response.body.user.email).toBe('ava@example.com');
   });
 
+  it('rejects an invalid bearer token for users route', async () => {
+    const response = await request(app)
+      .get('/api/users/')
+      .set('Authorization', 'Bearer not-a-real-token');
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: 'Unauthorized' });
+    expect(response.headers['content-type']).toContain('application/json');
+  });
+
+  it('rejects a mismatched bearer token signature for users route', async () => {
+    const token = signToken({
+      sub: '123',
+      email: 'ava@example.com',
+      provider: 'oauth2',
+      exp: Math.floor(Date.now() / 1000) + 60,
+    });
+
+    const [header, body, signature] = token.split('.');
+    const tamperedToken = `${header}.${body}.not-a-valid-signature`;
+
+    const response = await request(app)
+      .get('/api/users/')
+      .set('Authorization', `Bearer ${tamperedToken}`);
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: 'Unauthorized' });
+  });
+
+  it('rejects an expired bearer token for users route', async () => {
+    const expiredToken = signToken({
+      sub: '123',
+      email: 'ava@example.com',
+      provider: 'oauth2',
+      exp: Math.floor(Date.now() / 1000) - 5,
+    });
+
+    const response = await request(app)
+      .get('/api/users/')
+      .set('Authorization', `Bearer ${expiredToken}`);
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: 'Unauthorized' });
+  });
+
   it('protects the users list without a bearer token', async () => {
     const response = await request(app).get('/api/users/');
 
@@ -95,5 +140,18 @@ describe('login and protected routes', () => {
 
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it.each([
+    '/api/teams/',
+    '/api/activities/',
+    '/api/leaderboard/',
+    '/api/workouts/',
+  ])('protects %s consistently without a bearer token', async (route) => {
+    const response = await request(app).get(route);
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: 'Unauthorized' });
+    expect(response.headers['content-type']).toContain('application/json');
   });
 });
