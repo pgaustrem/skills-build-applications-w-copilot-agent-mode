@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { buildApiEndpoint } from '../config/api.js';
+
+const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim();
+const workoutsApiUrl = codespaceName
+  ? `https://${codespaceName}-8000.app.github.dev/api/workouts/`
+  : 'http://localhost:8000/api/workouts/';
 
 function normalizeItems(payload) {
   if (Array.isArray(payload)) return payload;
@@ -15,7 +19,7 @@ export default function Workouts() {
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
-        const response = await fetch(buildApiEndpoint('workouts'));
+        const response = await fetch(workoutsApiUrl);
         if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
         const payload = await response.json();
         setWorkouts(normalizeItems(payload));

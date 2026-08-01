@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { buildApiEndpoint } from '../config/api.js';
+
+const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim();
+const teamsApiUrl = codespaceName
+  ? `https://${codespaceName}-8000.app.github.dev/api/teams/`
+  : 'http://localhost:8000/api/teams/';
 
 function normalizeItems(payload) {
   if (Array.isArray(payload)) return payload;
@@ -15,7 +19,7 @@ export default function Teams() {
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        const response = await fetch(buildApiEndpoint('teams'));
+        const response = await fetch(teamsApiUrl);
         if (!response.ok) throw new Error(`Request failed with status ${response.status}`);
         const payload = await response.json();
         setTeams(normalizeItems(payload));
