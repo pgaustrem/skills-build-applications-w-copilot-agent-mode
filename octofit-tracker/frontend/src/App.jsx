@@ -1,3 +1,4 @@
+import React from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import './App.css'
 import Activities from './components/Activities.jsx'
