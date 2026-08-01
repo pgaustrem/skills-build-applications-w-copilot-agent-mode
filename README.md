@@ -25,5 +25,5 @@ For a Codespaces session, define the variable in the local frontend environment 
 VITE_CODESPACE_NAME=<your-codespace-name>
 ```
 
-This value should live in `.env.local` for local Vite development and should not be committed to version control.
+This value should live in `.env.local` for local Vite development and should not be committed to version control. 
 
