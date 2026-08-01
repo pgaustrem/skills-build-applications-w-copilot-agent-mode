@@ -1,10 +1,11 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
 import './App.css'
-
-const codespaceName = import.meta.env.VITE_CODESPACE_NAME
-const baseApiUrl = codespaceName
-  ? `https://${codespaceName}-8000.app.github.dev/api`
-  : 'http://localhost:8000/api'
+import Activities from './components/Activities.jsx'
+import Leaderboard from './components/Leaderboard.jsx'
+import Teams from './components/Teams.jsx'
+import Users from './components/Users.jsx'
+import Workouts from './components/Workouts.jsx'
+import { apiBaseUrl } from './config/api.js'
 
 const navItems = [
   { to: '/', label: 'Users' },
@@ -13,20 +14,6 @@ const navItems = [
   { to: '/leaderboard', label: 'Leaderboard' },
   { to: '/workouts', label: 'Workouts' },
 ]
-
-function ResourceView({ endpoint, title }) {
-  return (
-    <div className="card shadow-sm">
-      <div className="card-body">
-        <h2 className="card-title h5">{title}</h2>
-        <p className="text-muted mb-3">Endpoint: {endpoint}</p>
-        <div className="alert alert-info mb-0">
-          This presentation tier is configured to call the backend at {baseApiUrl}.
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function App() {
   return (
@@ -53,12 +40,16 @@ function App() {
         </div>
       </header>
 
+      <div className="alert alert-info mb-4">
+        Presentation tier API base URL: {apiBaseUrl}. Define <code>VITE_CODESPACE_NAME</code> in <code>.env.local</code> to target a Codespaces URL.
+      </div>
+
       <Routes>
-        <Route path="/" element={<ResourceView endpoint="/api/users/" title="Users" />} />
-        <Route path="/teams" element={<ResourceView endpoint="/api/teams/" title="Teams" />} />
-        <Route path="/activities" element={<ResourceView endpoint="/api/activities/" title="Activities" />} />
-        <Route path="/leaderboard" element={<ResourceView endpoint="/api/leaderboard/" title="Leaderboard" />} />
-        <Route path="/workouts" element={<ResourceView endpoint="/api/workouts/" title="Workouts" />} />
+        <Route path="/" element={<Users />} />
+        <Route path="/teams" element={<Teams />} />
+        <Route path="/activities" element={<Activities />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/workouts" element={<Workouts />} />
       </Routes>
     </div>
   )
